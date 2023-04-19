@@ -1,0 +1,53 @@
+package com.employee.project;
+@RestController
+
+@RequestMapping("/api/employee")
+public class Econtroller {
+    @Autowired
+    private EmployeeRepository employeeRepository;
+
+    @GetMapping("")
+    public List<Employees> getAllEmployees() {
+        return employeeRepository.findAll();
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<Employee> getEmployeeById(@PathVariable(value = "id") Long employeeId)
+            throws ResourceNotFoundException {
+        Employee employee = EmployeeRepository.findById(employeeId)
+                .orElseThrow(() -> new ResourceNotFoundException("Employee not found for this id :: " + employeeId));
+
+        return ResponseEntity.ok().body(employee);
+    }
+
+    @PostMapping("")
+    public Employee createEmployee(@Valid @RequestBody Employee employee) {
+        return EmployeeRepository.save(employee);
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<Employee> updateEmployee(@PathVariable(value = "id") Long employeeId,
+                                                   @Valid @RequestBody Employee employeeDetails)
+            throws ResourceNotFoundException {
+
+    Employee employee = employeeRepository.findById(employeeId)
+                .orElseThrow(() -> new ResourceNotFoundException("Employee not found for this id :: " + employeeId));
+
+        employee.setName(employeeDetails.getName());
+        employee.setEmail(employeeDetails.getEmail());
+        final employee updatedEmployee = employeeRepository.save(employee);
+        return ResponseEntity.ok(updatedEmployee);
+    }
+
+    @DeleteMapping("/{id}")
+    public Map<String, Boolean> deleteEmployee(@PathVariable(value = "id") Long employeeId)
+            throws ResourceNotFoundException {
+        Employee employee = employeeRepository.findById(employeeId)
+                .orElseThrow(() -> new ResourceNotFoundException("Employee not found for this id :: " + employeeId));
+
+        employeeRepository.delete(employee);
+        Map<String, Boolean> response = new HashMap<>();
+        response.put("deleted", Boolean.TRUE);
+        return response;
+    }
+}
